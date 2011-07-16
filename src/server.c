@@ -56,13 +56,9 @@ static void handle_press(const monome_event_t *e, void *data) {
 	sosc_state_t *state = data;
 	char *cmd;
 
-    // modified by Owen to allow for both on and off msgs from the Chronome
-    // last argument to lo_send_from 
-    // was "e->event_type == MONOME_BUTTON_DOWN" 
-    // is now "e->event_type"
 	cmd = osc_path("grid/key", state->config.app.osc_prefix);
 	lo_send_from(state->outgoing, state->server, LO_TT_IMMEDIATE, cmd, "iii",
-	             e->grid.x, e->grid.y, e->event_type);
+	             e->grid.x, e->grid.y, e->event_type == MONOME_BUTTON_DOWN);
 	s_free(cmd);
 }
 
