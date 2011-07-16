@@ -85,6 +85,12 @@ OSC_HANDLER_FUNC(led_intensity_handler) {
 	return monome_led_intensity(monome, argv[0]->i);
 }
 
+// Owen added for Chronome color support
+OSC_HANDLER_FUNC(led_color_handler) {
+    monome_t *monome = user_data;
+	return monome_led_color(monome, argv[0]->i, argv[1]->i, argv[2]->i, argv[3]->i, argv[4]->i);
+}
+
 OSC_HANDLER_FUNC(led_level_set_handler) {
 	monome_t *monome = user_data;
 	return monome_led_level_set(monome, argv[0]->i, argv[1]->i, argv[2]->i);
@@ -212,6 +218,10 @@ void osc_register_methods(sosc_state_t *state) {
 
 	METHOD("grid/led/intensity")
 		REGISTER("i", led_intensity_handler);
+    
+    // Owen added for Chronome color support
+    METHOD("grid/led/color")
+        REGISTER("iiiii", led_color_handler);
 
 	METHOD("grid/led/level/set")
 		REGISTER("iii", led_level_set_handler);
@@ -291,7 +301,11 @@ void osc_unregister_methods(sosc_state_t *state) {
 
 	METHOD("grid/led/intensity")
 		UNREGISTER("i");
-
+    
+    // Owen added for Chronome color support
+    METHOD("grid/led/color")
+        UNREGISTER("iiiii");
+    
 	METHOD("grid/led/level/set")
 		UNREGISTER("iii");
 

@@ -56,9 +56,24 @@ static void handle_press(const monome_event_t *e, void *data) {
 	sosc_state_t *state = data;
 	char *cmd;
 
+    // modified by Owen to allow for both on and off msgs from the Chronome
+    // last argument to lo_send_from 
+    // was "e->event_type == MONOME_BUTTON_DOWN" 
+    // is now "e->event_type"
 	cmd = osc_path("grid/key", state->config.app.osc_prefix);
 	lo_send_from(state->outgoing, state->server, LO_TT_IMMEDIATE, cmd, "iii",
-	             e->grid.x, e->grid.y, e->event_type == MONOME_BUTTON_DOWN);
+	             e->grid.x, e->grid.y, e->event_type);
+	s_free(cmd);
+}
+
+// added by owen for Chronome
+static void handle_pressure(const monome_event_t *e, void *data) {
+	sosc_state_t *state = data;
+	char *cmd;
+    
+	cmd = osc_path("grid/pressure", state->config.app.osc_prefix);
+	lo_send_from(state->outgoing, state->server, LO_TT_IMMEDIATE, cmd, "iii",
+	             e->pressure.x, e->pressure.y, e->pressure.value);
 	s_free(cmd);
 }
 
@@ -169,6 +184,7 @@ void server_run(monome_t *monome) {
 	HANDLE(MONOME_ENCODER_KEY_DOWN, handle_enc_key);
 	HANDLE(MONOME_ENCODER_KEY_UP, handle_enc_key);
 	HANDLE(MONOME_TILT, handle_tilt);
+    HANDLE(MONOME_PRESSURE, handle_pressure);
 #undef HANDLE
 
 	monome_set_rotation(state.monome, state.config.dev.rotation);
