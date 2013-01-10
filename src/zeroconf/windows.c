@@ -1,10 +1,10 @@
 /**
- * Copyright (c) 2010-2011 William Light <wrl@illest.net>
- * 
+ * Copyright (c) 2010-2012 William Light <wrl@illest.net>
+ *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
  * copyright notice and this permission notice appear in all copies.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
  * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
@@ -16,12 +16,31 @@
 
 #include <stdio.h>
 
-/* convert a port int to either a zero-length string if 0 or
-   a maximum 5 length string. */
+#include <Windows.h>
+#include <dns_sd.h>
 
-void sosc_port_itos(char *dest, long int port) {
-	if( port )
-		snprintf(dest, sizeof(char) * 6, "%ld", port);
-	else
-		*dest = '\0';
+#include "serialosc.h"
+#include "zeroconf.h"
+
+void sosc_zeroconf_init()
+{
+	FARPROC rfunc, dfunc;
+	HMODULE ldnssd;
+
+	if (!(ldnssd = LoadLibrary("dnssd.dll"))) {
+		fprintf(stderr, "sosc_zeroconf_init(): couldn't load dnssd.dll\n");
+		return;
+	}
+
+	rfunc = GetProcAddress(ldnssd, "DNSServiceRegister");
+	dfunc = GetProcAddress(ldnssd, "DNSServiceRefDeallocate");
+
+	if (!rfunc || !dfunc) {
+		fprintf(stderr, "sosc_zeroconf_init(): couldn't resolve symbols in dnssd.dll\n");
+		FreeLibrary(ldnssd);
+		return;
+	}
+
+	sosc_dnssd_registration_func = (dnssd_registration_func_t) rfunc;
+	sosc_dnssd_deallocation_func = (dnssd_deallocation_func_t) dfunc;
 }

@@ -31,7 +31,7 @@ static DWORD WINAPI lo_thread(LPVOID param) {
 	return 0;
 }
 
-int event_loop(const sosc_state_t *state) {
+int sosc_event_loop(const sosc_state_t *state) {
 	OVERLAPPED ov = {0, 0, {{0, 0}}};
 	HANDLE hres, lo_thd_res;
 	DWORD evt_mask;
@@ -58,7 +58,7 @@ int event_loop(const sosc_state_t *state) {
 				return 1;
 
 			default:
-				printf("event_loop() error: %d\n", GetLastError());
+				fprintf(stderr, "event_loop() error: %d\n", GetLastError());
 				return 1;
 			}
 
@@ -72,10 +72,12 @@ int event_loop(const sosc_state_t *state) {
 
 		case WAIT_ABANDONED_0:
 		case WAIT_FAILED:
-			printf("event_loop(): wait failed: %ld\n", GetLastError());
+			fprintf(stderr, "event_loop(): wait failed: %ld\n",
+			        GetLastError());
 			return 1;
 		}
 	} while ( 1 );
 
+	((void) lo_thd_res); /* shut GCC up about this being an unused variable */
 	return 0;
 }
